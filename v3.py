@@ -13,11 +13,8 @@ from torch import nn
 import time
 from torch.utils.data import Dataset
 from torch.utils.data import DataLoader
-import re
 import spacy
-from string import punctuation
 
-regex = re.compile("^J|^R|^N|^V.*")
 nlp = spacy.load("en_core_web_lg")
 
 class TextClassificationModel(nn.Module):
@@ -115,31 +112,7 @@ class MyDataLoader:
         return data
     
 def clean_text(text):
-    text = text.lower()
-    text = re.sub(r"what's", "what is ", text)
-    text = re.sub(r"\'s", " ", text)
-    text = re.sub(r"\'ve", " have ", text)
-    text = re.sub(r"can't", "can not ", text)
-    text = re.sub(r"n't", " not ", text)
-    text = re.sub(r"i'm", "i am ", text)
-    text = re.sub(r"\'re", " are ", text)
-    text = re.sub(r"\'d", " would ", text)
-    text = re.sub(r"\'ll", " will ", text)
-    text = re.sub(r"\'scuse", " excuse ", text)
-    text = re.sub('\W', ' ', text)
-    text = re.sub('\s+', ' ', text)
-    text = text.strip(' ')
-    return text    
-
-def get_keywords(text):
-    result = []
-    doc = nlp(text.lower())
-    for token in doc:
-      if(token.text in nlp.Defaults.stop_words or token.text in punctuation):
-        continue
-      if(token.pos_ in pos_tag):
-        result.append(token.text)
-    return result.to_string
+    return text.lower().strip(' ')
 
 myDataLoader = MyDataLoader("tmn_data.txt")
 df = myDataLoader.getData()
@@ -157,15 +130,7 @@ df['processed_text'] = df['title'].apply(lambda x: [vocab[token] for token in to
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 myDataset = CustomDataset(df)
 dataloader = DataLoader(myDataset, batch_size=8, shuffle=False, collate_fn=collate_batch)
-'''
-for idx, (label, text, offsets) in enumerate(dataloader):
-    print(label)
-    print(text)
 
-for i_batch, sample_batched in enumerate(dataloader):
-    print(i_batch, sample_batched['encoded_label'], sample_batched['processed_text'])
-
-'''
 num_class = len(set([label for label in df["encoded_label"] ]))
 vocab_size = len(vocab)
 emsize = 64

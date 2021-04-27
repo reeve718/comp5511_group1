@@ -60,8 +60,8 @@ vectorizer = CountVectorizer(tokenizer = spacy_tokenizer, ngram_range=(1,2))
 classifier = SVC(C=1.0, kernel='linear', degree=3, gamma='auto')
 #classifier = SVC(C=150, gamma=2e-2, probability=True)
 pipe = Pipeline([("cleaner", predictors()),
-                 ('vectorizer', vectorizer),
-                 #('vectorizer', TfidfVectorizer(stop_words=STOP_WORDS,ngram_range=(1,2))),
+                # ('vectorizer', vectorizer),
+                 ('vectorizer', TfidfVectorizer(stop_words=STOP_WORDS,ngram_range=(1,1))),
                  ('classifier', classifier)])
 
 X = df['title']
