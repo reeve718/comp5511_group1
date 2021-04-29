@@ -1,0 +1,32 @@
+Text Classification
+
+*Task definition
+Reference:[4]
+-Binary class
+-Single-label
+-Multi-label
+-hierarchical classification
+
+*Challenges
+-Ambiguity
+
+Reference:[10]
+-Entity identification?
+-Lexical Gap?
+
+*Typical methods
+Reference:[3]
+-Shallow
+-Deep learning
+
+*State-Of-The-Arts
+Reference:[3]
+-BERT
+
+-GNN
+
+
+*Application scenarios
+
+
+*Conclusion
