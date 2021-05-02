@@ -1,44 +1,55 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Apr 30 00:20:17 2021
-
-@author: Reeve
-"""
-from sklearn.pipeline import Pipeline
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.linear_model import SGDClassifier
 import numpy as np
-import spacy
-from sklearn.base import BaseEstimator, TransformerMixin
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import LabelEncoder
+import torch
+import transformers as ppb
+from sklearn import svm
+from sklearn.naive_bayes import ComplementNB
+from sklearn.model_selection import cross_val_score, ShuffleSplit
+import warnings
+warnings.filterwarnings('ignore')
 
-class WordVectorTransformer(TransformerMixin,BaseEstimator):
-    def __init__(self, model="en_core_web_sm"):
-        self.model = model
+def clean_text(text):
+    return text.lower().strip(' ')
 
-    def fit(self,X,y=None):
-        return self
 
-    def transform(self,X):
-        nlp = spacy.load(self.model)
-        return np.concatenate([nlp(doc).vector.reshape(1,-1) for doc in X])
+df = pd.read_csv("https://raw.githubusercontent.com/reeve718/comp5511_group1/main/tmn_data.txt",sep = "######", names=["Text", "Label"],engine='python')
+df['Clean_text'] = df['Text'].map(lambda x : clean_text(x))
+
+# For DistilBERT:
+model_class, tokenizer_class, pretrained_weights = (ppb.DistilBertModel, ppb.DistilBertTokenizer, 'distilbert-base-uncased')
+
+# Load pretrained model/tokenizer
+tokenizer = tokenizer_class.from_pretrained(pretrained_weights)
+model = model_class.from_pretrained(pretrained_weights)
+
+tokenized = df['Clean_text'].apply((lambda x: tokenizer.encode(x, add_special_tokens=True)))
+
+max_len = 0
+for i in tokenized.values:
+    if len(i) > max_len:
+        max_len = len(i)
+
+padded = np.array([i + [0]*(max_len-len(i)) for i in tokenized.values])
+
+attention_mask = np.where(padded != 0, 1, 0)
+
+input_ids = torch.tensor(padded)  
+attention_mask = torch.tensor(attention_mask)
+
+with torch.no_grad():
+    last_hidden_states = model(input_ids, attention_mask=attention_mask)
     
-corpus = [
-"I went outside yesterday and picked some flowers.",
-"She wore a red hat with a dress to the party.", 
-"I think he was wearing athletic clothes and sneakers of some sort.", 
-"I took my dog for a walk at the park.", 
-"I found a hot pink hat on sale over the weekend.",
-"The dog has brown fur with white spots."
-]   
+features = last_hidden_states[0][:,0,:].numpy()
 
-labels = [0,1,1,0,1,0]
+Encoder = LabelEncoder()
+labels = Encoder.fit_transform(df['Label'])
 
-transformer = WordVectorTransformer()
-transformer.fit_transform(corpus)
+lr_clf = LogisticRegression()
+cv = ShuffleSplit(n_splits=5, test_size=0.2, random_state=None)
+scores = cross_val_score(lr_clf, features, labels, cv=cv)
+print(scores)
+print("%0.2f accuracy with a standard deviation of %0.2f" % (scores.mean(), scores.std()))
 
-text_clf = Pipeline([
-            ('vect', WordVectorTransformer()),
-            ('clf', SGDClassifier()),
-            ])
-
-text_clf.fit(corpus,labels)
