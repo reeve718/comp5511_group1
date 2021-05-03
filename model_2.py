@@ -145,12 +145,9 @@ split_train_, test_dataset = random_split(myDataset, [num_test, len(myDataset) -
 num_train = int(len(split_train_) * 0.95)
 split_train_, split_valid_ = random_split(split_train_, [num_train, len(split_train_) - num_train])
 
-train_dataloader = DataLoader(split_train_, batch_size=BATCH_SIZE,
-                              shuffle=True, collate_fn=collate_batch)
-valid_dataloader = DataLoader(split_valid_, batch_size=BATCH_SIZE,
-                              shuffle=True, collate_fn=collate_batch)
-test_dataloader = DataLoader(test_dataset, batch_size=BATCH_SIZE,
-                              shuffle=True, collate_fn=collate_batch)
+train_dataloader = DataLoader(split_train_, batch_size=BATCH_SIZE, shuffle=True, collate_fn=collate_batch)
+valid_dataloader = DataLoader(split_valid_, batch_size=BATCH_SIZE, shuffle=True, collate_fn=collate_batch)
+test_dataloader = DataLoader(test_dataset, batch_size=BATCH_SIZE,  shuffle=True, collate_fn=collate_batch)
 
 for epoch in range(1, EPOCHS + 1):
     epoch_start_time = time.time()

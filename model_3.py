@@ -6,6 +6,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import cross_val_score, ShuffleSplit
 from sklearn.metrics import f1_score, classification_report, accuracy_score
+import warnings
+warnings.filterwarnings('ignore')
 
 def clean_text(text):
     return text.lower().strip(' ')
@@ -23,7 +25,6 @@ def evaluate(clf):
     print (classification_report(Test_Y, y_predict_test))
     print("F1 micro: %0.4f" % f1_score(Test_Y, y_predict_test, average='micro'))
     print("F1 macro: %0.4f" % f1_score(Test_Y, y_predict_test, average='macro'))
-    print("F1 weighted: %0.4f" % f1_score(Test_Y, y_predict_test, average='weighted'))
     print("Accuracy: %0.4f" % (accuracy_score(Test_Y, y_predict_test)))
     
 #load pre-trained bert
@@ -50,7 +51,7 @@ labels = df['Label']
 
 Train_X, Test_X, Train_Y, Test_Y = train_test_split(features_martix, labels ,test_size=0.2)
 cv = ShuffleSplit(n_splits=5, test_size=0.2, random_state=None)
-clf = LogisticRegression()
+clf = LogisticRegression(max_iter=1000)
 train(clf)
 evaluate(clf)
 
